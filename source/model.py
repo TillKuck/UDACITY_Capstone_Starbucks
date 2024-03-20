@@ -81,7 +81,6 @@ class XGBoostModel:
         self.pipeline = Pipeline(steps=[('preprocessor', preprocessor),
                                         ('classifier', XGBClassifier())
                                         ])
-
         return self.pipeline
 
     def fit_model(self, X_train, y_train):
@@ -101,13 +100,8 @@ class XGBoostModel:
         self.param_grid['classifier__scale_pos_weight'] = [scale_pos_weight]
         
         # Perform grid search with cross-validation
-        self.model = GridSearchCV(self.pipeline, self.param_grid, cv=5, verbose=2)
-        with tqdm(total=len(self.param_grid['classifier__n_estimators']) *
-                        len(self.param_grid['classifier__max_depth']) *
-                        len(self.param_grid['classifier__learning_rate']),
-                  desc="Hyperparameter Tuning") as pbar:
-            self.model.fit(X_train, y_train)
-            pbar.update()
+        self.model = GridSearchCV(self.pipeline, self.param_grid, cv=5, verbose=3)
+        self.model.fit(X_train, y_train)
 
     def predict(self, X_test):
         """
