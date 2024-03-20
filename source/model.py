@@ -22,12 +22,6 @@ class XGBoostModel:
         """
         self.pipeline = None
         self.model = None
-        self.param_grid = {
-            'classifier__n_estimators': [100, 200, 300], # [100, 200, 300]
-            'classifier__max_depth': [3, 5, 7], # [3, 5, 7]
-            'classifier__learning_rate': [0.1, 0.01, 0.001], # [0.1, 0.01, 0.001]
-            'classifier__objective': ['binary:logistic']
-        }
 
     def split_train_test(self, data, target_col, test_size=0.25, random_state=42):
         """
@@ -91,16 +85,24 @@ class XGBoostModel:
         - X_train: The feature matrix of the training data.
         - y_train: The target labels of the training data.
         """
+        # Define parameter grid
+        param_grid = {
+            'classifier__n_estimators': [100, 200, 300], # [100, 200, 300]
+            'classifier__max_depth': [3, 5, 7], # [3, 5, 7]
+            'classifier__learning_rate': [0.1, 0.01, 0.001], # [0.1, 0.01, 0.001]
+            'classifier__objective': ['binary:logistic']
+        }
+        
         # Calculate scale_pos_weight
         neg_count = np.sum(y_train == 0)
         pos_count = np.sum(y_train == 1)
         scale_pos_weight = round(neg_count / pos_count, 2)
         
         # Update param_grid with scale_pos_weight
-        self.param_grid['classifier__scale_pos_weight'] = [scale_pos_weight]
+        param_grid['classifier__scale_pos_weight'] = [scale_pos_weight]
         
         # Perform grid search with cross-validation
-        self.model = GridSearchCV(self.pipeline, self.param_grid, cv=5, verbose=3)
+        self.model = GridSearchCV(self.pipeline, param_grid, cv=5, verbose=3)
         self.model.fit(X_train, y_train)
 
     def predict(self, X_test):
