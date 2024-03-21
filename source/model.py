@@ -1,10 +1,11 @@
 import numpy as np
+import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import GridSearchCV, train_test_split
 from xgboost import XGBClassifier
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score, roc_auc_score
 import matplotlib.pyplot as plt
 from xgboost import plot_importance
 
@@ -30,7 +31,7 @@ class XGBoostModel:
         -------------
         Parameters:
         - data: The DataFrame containing the data.
-        - target_column: The name of the target column.
+        - target_col: The name of the target column.
         -------------
         Returns:
         - X_train: The feature matrix of the training data.
@@ -125,8 +126,8 @@ class XGBoostModel:
         Evaluates the model's performance on test data.
         -------------
         Parameters:
-        - X_test: The feature matrix of the test data.
         - y_test: The target labels of the test data.
+        - y_pred: From the model predicted labels of the test data.
         -------------
         Returns:
         - evaluation_metrics: Dictionary containing evaluation metrics.
@@ -149,7 +150,7 @@ class XGBoostModel:
         print("\nClassification Report:")
         print(classification_report(y_true, y_pred))
         
-    def plot_feature_importance(model, feature_names):
+    def plot_feature_importance(self):
         """
         Plots feature importances.
 
@@ -157,14 +158,9 @@ class XGBoostModel:
         - model: The trained model with a 'feature_importances_' attribute.
         - feature_names: List of feature names corresponding to the importances.
         """
-        importances = model.feature_importances_
-        indices = np.argsort(importances)[::-1]
+        feature_important = self.model.get_booster().get_score(importance_type='weight')
+        keys = list(feature_important.keys())
+        values = list(feature_important.values())
 
-        plt.figure(figsize=(10, 6))
-        plt.title("Feature Importances")
-        plt.bar(range(len(feature_names)), importances[indices], color="b", align="center")
-        plt.xticks(range(len(feature_names)), [feature_names[i] for i in indices], rotation='vertical')
-        plt.xlim([-1, len(feature_names)])
-        plt.xlabel("Feature")
-        plt.ylabel("Importance")
-        plt.show()
+        data = pd.DataFrame(data=values, index=keys, columns=["score"]).sort_values(by = "score", ascending=False)
+        data.nlargest(40, columns="score").plot(kind='barh', figsize = (20,10)) ## plot top 40 features
