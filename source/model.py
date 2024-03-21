@@ -5,7 +5,8 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import GridSearchCV, train_test_split
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from tqdm import tqdm
+import matplotlib.pyplot as plt
+from xgboost import plot_importance
 
 class XGBoostModel:
     """
@@ -146,4 +147,9 @@ class XGBoostModel:
         print(conf_matrix)
         print("\nClassification Report:")
         print(classification_report(y_true, y_pred))
+        
+        # Plot feature importance
+        plot_importance(self.model.best_estimator_.named_steps['classifier'], max_num_features=10)
+        plt.title("Feature Importance")
+        plt.show()
         
