@@ -105,6 +105,7 @@ class XGBoostModel:
         # Perform grid search with cross-validation
         self.model = GridSearchCV(self.pipeline, param_grid, cv=5, verbose=3)
         self.model.fit(X_train, y_train)
+        print('Best model params:\n', self.model.best_params_)
 
     def predict(self, X_test):
         """
@@ -148,8 +149,22 @@ class XGBoostModel:
         print("\nClassification Report:")
         print(classification_report(y_true, y_pred))
         
-        # Plot feature importance
-        plot_importance(self.model.best_estimator_.named_steps['classifier'], max_num_features=10)
-        plt.title("Feature Importance")
+    def plot_feature_importance(model, feature_names):
+        """
+        Plots feature importances.
+
+        Parameters:
+        - model: The trained model with a 'feature_importances_' attribute.
+        - feature_names: List of feature names corresponding to the importances.
+        """
+        importances = model.feature_importances_
+        indices = np.argsort(importances)[::-1]
+
+        plt.figure(figsize=(10, 6))
+        plt.title("Feature Importances")
+        plt.bar(range(len(feature_names)), importances[indices], color="b", align="center")
+        plt.xticks(range(len(feature_names)), [feature_names[i] for i in indices], rotation='vertical')
+        plt.xlim([-1, len(feature_names)])
+        plt.xlabel("Feature")
+        plt.ylabel("Importance")
         plt.show()
-        
